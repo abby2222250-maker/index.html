@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>男友觀測站</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#f5ede3;--bg1:#ede0d0;--bg2:#e8d5c0;
+  --card:rgba(255,250,244,0.88);--card-solid:#fffaf4;
+  --text:#3a2e27;--sub:#9a8778;--sub2:#c4b5a8;
+  --rose:#c97d5e;--rose2:#b86a4a;
+  --green:#7aaa8a;--red:#c9665a;
+  --border:rgba(180,140,110,0.18);
+  --shadow:0 2px 16px rgba(160,110,80,0.10);
+  --shadow-md:0 6px 28px rgba(150,100,70,0.14);
+  --r:20px;--r-sm:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  background:linear-gradient(155deg,#f7ede0 0%,#ede0cc 35%,#e5d3bc 65%,#ddc9ae 100%);
+  min-height:100vh;color:var(--text);padding-bottom:88px;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 75% 5%,rgba(210,170,130,0.28) 0%,transparent 55%),
+             radial-gradient(ellipse at 5% 85%,rgba(200,155,115,0.20) 0%,transparent 50%);
+}
+/* Loading */
+#loading{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(155deg,#f7ede0,#ddc9ae);
+}
+.loading-icon{font-size:48px;margin-bottom:16px;animation:pulse 1.2s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.loading-txt{font-size:14px;color:var(--sub);}
+/* Setup */
+#setup{display:none;position:relative;z-index:1;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:48px 28px;text-align:center;}
+#setup.show{display:flex;}
+.setup-icon{width:100px;height:100px;border-radius:30px;margin-bottom:24px;background:linear-gradient(135deg,#e8d0ba,#d4b090);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 10px 36px rgba(160,100,60,0.20);}
+.setup-title{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--text);margin-bottom:8px;}
+.setup-sub{color:var(--sub);font-size:13.5px;line-height:1.7;margin-bottom:36px;}
+.setup-input{width:100%;max-width:300px;background:var(--card-solid);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:14px 18px;font-size:16px;font-family:inherit;text-align:center;color:var(--text);outline:none;box-shadow:var(--shadow);}
+.setup-input:focus{border-color:var(--rose);}
+.setup-btn{margin-top:12px;width:100%;max-width:300px;background:linear-gradient(135deg,var(--rose),var(--rose2));color:#fff;border:none;border-radius:var(--r-sm);padding:14px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;box-shadow:0 6px 22px rgba(180,100,70,0.30);}
+/* Main */
+#main{display:none;position:relative;z-index:1;}
+#main.show{display:block;}
+/* Header */
+.hdr{background:rgba(247,237,224,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:54px 18px 13px;position:sticky;top:0;z-index:100;}
+.hdr-inner{display:flex;justify-content:space-between;align-items:flex-end;}
+.hdr-date{font-size:11px;color:var(--sub);letter-spacing:.07em;margin-bottom:2px;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);}
+.hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--card-solid);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;box-shadow:var(--shadow);}
+/* Content */
+.pg{padding:14px 14px 0;}
+/* Rank card */
+.rank-card{background:linear-gradient(135deg,#c98a60 0%,#b06840 50%,#9a5530 100%);border-radius:var(--r);padding:18px 20px 16px;margin-bottom:13px;box-shadow:0 8px 32px rgba(150,80,40,0.28);color:#fff;position:relative;overflow:hidden;}
+.rank-card::before{content:'';position:absolute;top:-30px;right:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.rc-row{display:flex;align-items:center;gap:13px;position:relative;}
+.rc-avatar{width:50px;height:50px;border-radius:14px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.30);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.rc-badge{font-size:10px;opacity:.75;letter-spacing:.1em;margin-bottom:3px;}
+.rc-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;}
+.rc-rank{font-size:11.5px;opacity:.88;margin-top:2px;}
+.rc-xp-row{display:flex;justify-content:space-between;align-items:center;margin-top:15px;margin-bottom:5px;position:relative;}
+.rc-xp-lbl{font-size:11px;opacity:.75;}
+.rc-xp-val{font-size:12px;font-weight:700;}
+.rc-bar{height:5px;background:rgba(255,255,255,0.22);border-radius:99px;overflow:hidden;}
+.rc-fill{height:100%;background:#fff;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.rc-hearts{display:flex;gap:5px;margin-top:11px;position:relative;}
+.rh{font-size:15px;opacity:.28;transition:opacity .3s;}.rh.on{opacity:1;}
+/* Timer */
+.timer-card{background:var(--card);border-radius:var(--r);padding:15px 16px;margin-bottom:13px;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.tc-left{display:flex;align-items:center;gap:11px;}
+.tc-icon{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#f0e4d4,#e4cdb4);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.tc-lbl{font-size:13.5px;font-weight:600;color:var(--text);}
+.tc-disp{font-size:11.5px;color:var(--sub);margin-top:2px;}
+.tc-btn{background:linear-gradient(135deg,var(--rose),var(--rose2));color:#fff;border:none;border-radius:11px;padding:9px 18px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;box-shadow:0 3px 12px rgba(170,90,60,0.28);white-space:nowrap;}
+.tc-btn.running{background:linear-gradient(135deg,#c06050,#a04040);}
+/* Tabs */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;}
+.sec-title{font-size:10.5px;font-weight:700;color:var(--sub);letter-spacing:.14em;}
+.tab-pills{display:flex;gap:6px;}
+.tab-pill{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:rgba(255,250,244,0.7);font-family:inherit;cursor:pointer;color:var(--sub);box-shadow:var(--shadow);}
+.tp-bad{background:linear-gradient(135deg,var(--rose),var(--rose2));color:#fff;border-color:transparent;box-shadow:0 3px 12px rgba(180,100,60,0.26);}
+.tp-good{background:linear-gradient(135deg,#7aaa8a,#5a9070);color:#fff;border-color:transparent;box-shadow:0 3px 12px rgba(90,150,100,0.26);}
+/* Grid */
+.items-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px;}
+.item-card{background:var(--card);border-radius:15px;border:1px solid var(--border);padding:11px 7px 10px;text-align:center;cursor:pointer;position:relative;overflow:hidden;user-select:none;box-shadow:var(--shadow);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .12s,box-shadow .12s;}
+.item-card:active{transform:scale(.91);box-shadow:none;}
+.ie{font-size:27px;margin-bottom:5px;display:block;}
+.in{font-size:10.5px;color:var(--text);line-height:1.3;font-weight:500;}
+.ixp{position:absolute;top:6px;right:6px;font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:7px;color:#fff;}
+.bad .ixp{background:var(--red);}.gd .ixp{background:var(--green);}
+.ic{position:absolute;top:6px;left:6px;font-size:9px;font-weight:700;color:var(--sub);background:rgba(255,250,244,0.8);border-radius:5px;padding:1px 4px;}
+/* Rating */
+.rating-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:16px 18px;margin-bottom:13px;box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.rh2{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;}
+.rt{font-size:13.5px;font-weight:700;color:var(--text);}
+.rs{font-size:11.5px;color:var(--sub);}
+.stars-row{display:flex;gap:5px;justify-content:center;margin-bottom:9px;}
+.star-btn{background:none;border:none;cursor:pointer;font-size:32px;padding:3px;line-height:1;filter:grayscale(1) opacity(.22);user-select:none;}
+.star-btn.lit{filter:none;}
+.star-btn:active{transform:scale(1.3);}
+@keyframes starPop{0%{transform:scale(1)}40%{transform:scale(1.45) rotate(-8deg)}70%{transform:scale(1.18) rotate(4deg)}100%{transform:scale(1)}}
+.star-btn.pop{animation:starPop .35s ease;}
+.rmsg{text-align:center;font-size:12px;color:var(--sub);min-height:18px;}
+/* Log */
+.log-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:13px;overflow:hidden;box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.log-hdr{padding:12px 15px;font-size:13px;font-weight:700;border-bottom:1px solid var(--border);color:var(--text);}
+.log-empty{padding:20px;text-align:center;color:var(--sub2);font-size:12.5px;}
+.log-item{display:flex;align-items:center;gap:9px;padding:10px 15px;border-bottom:1px solid var(--border);}
+.log-item:last-child{border-bottom:none;}
+.le{font-size:18px;}.lt{flex:1;font-size:12px;color:var(--text);}
+.ltime{font-size:10px;color:var(--sub2);}
+.lxp{font-size:11.5px;font-weight:700;margin-right:3px;}
+.lxp.bad{color:var(--red);}.lxp.pos{color:var(--green);}
+.ldel{background:rgba(150,100,70,0.08);border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;font-size:10px;color:var(--sub);display:flex;align-items:center;justify-content:center;}
+/* Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(245,235,220,0.90);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:9px 0 26px;z-index:100;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 20px;color:var(--sub);}
+.nav-btn.active{color:var(--rose);}
+.ni{font-size:21px;}.nl{font-size:10px;font-weight:600;letter-spacing:.04em;}
+/* History */
+#pg-history{display:none;}#pg-settings{display:none;}
+.h-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);margin-bottom:11px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.h-summary{display:flex;align-items:center;padding:13px 15px;cursor:pointer;user-select:none;gap:8px;}
+.h-arrow{font-size:10px;color:var(--sub2);transition:transform .2s;flex-shrink:0;}
+.h-arrow.open{transform:rotate(90deg);}
+.h-detail{display:none;}.h-detail.open{display:block;}
+.h-meta{padding:9px 15px;border-top:1px solid var(--border);background:rgba(240,228,212,0.45);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.h-tag{display:inline-flex;align-items:center;gap:3px;background:rgba(255,250,244,0.8);border:1px solid var(--border);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;}
+.h-grp{padding:6px 15px 3px;font-size:10px;font-weight:700;letter-spacing:.1em;}
+.h-li{display:flex;align-items:center;gap:9px;padding:9px 15px;border-top:1px solid var(--border);}
+/* Settings */
+.sg{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow);}
+.si{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.si:last-child{border-bottom:none;}
+.sl{font-size:13.5px;font-weight:500;}.ss{font-size:11.5px;color:var(--sub);margin-top:2px;}
+.sb{background:none;border:1.5px solid var(--border);border-radius:10px;padding:6px 15px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--sub);}
+.sd{color:var(--red)!important;border-color:var(--red)!important;}
+/* Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(40,28,20,0.48);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s;pointer-events:none;}
+.modal-ov.show{opacity:1;pointer-events:all;}
+.modal-box{background:var(--card-solid);border-radius:26px 26px 0 0;padding:22px 22px 42px;width:100%;max-width:480px;transform:translateY(110%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -8px 40px rgba(100,60,30,0.18);}
+.modal-ov.show .modal-box{transform:translateY(0);}
+.modal-pip{width:38px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 18px;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.modal-sub{font-size:12.5px;color:var(--sub);margin-bottom:18px;line-height:1.6;}
+.modal-input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px 15px;font-size:15px;font-family:inherit;outline:none;margin-bottom:14px;background:#fff;color:var(--text);}
+.modal-input:focus{border-color:var(--rose);}
+.modal-btns{display:flex;gap:9px;}
+.modal-btn{flex:1;padding:12px;border-radius:13px;font-size:13.5px;font-family:inherit;font-weight:600;cursor:pointer;border:none;}
+.mb-cancel{background:rgba(0,0,0,0.06);color:var(--sub);}
+.mb-ok{background:linear-gradient(135deg,var(--rose),var(--rose2));color:#fff;}
+.mb-danger{background:linear-gradient(135deg,#c06050,#a04040);color:#fff;}
+/* Toast & XP */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(50,35,25,0.85);color:#fff;padding:10px 22px;border-radius:99px;font-size:12.5px;font-weight:500;opacity:0;transition:opacity .2s;z-index:999;pointer-events:none;white-space:nowrap;backdrop-filter:blur(10px);}
+.toast.show{opacity:1;}
+@keyframes xpFloat{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-22px) scale(1.12)}100%{opacity:0;transform:translateY(-48px) scale(.88)}}
+.xp-pop{position:fixed;pointer-events:none;z-index:999;font-size:17px;font-weight:800;animation:xpFloat 1.1s ease forwards;}
+.pg-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loading-icon">🔭</div>
+  <div class="loading-txt">載入中…</div>
+</div>
+
+<!-- Setup -->
+<div id="setup">
+  <div class="setup-icon">🔭</div>
+  <div class="setup-title">男友觀測站</div>
+  <div class="setup-sub">幫你記錄他的一切行為<br>好的壞的都逃不掉 👀</div>
+  <input class="setup-input" id="name-input" type="text" placeholder="輸入他的名字或暱稱" maxlength="10">
+  <button class="setup-btn" id="start-btn">開始觀測 →</button>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div><div class="hdr-date" id="hdr-date"></div><div class="hdr-title">男友觀測站</div></div>
+      <button class="hdr-btn" id="hdr-set">⚙️</button>
+    </div>
+  </div>
+
+  <div id="pg-home">
+    <div class="pg">
+      <div class="rank-card">
+        <div class="rc-row">
+          <div class="rc-avatar">🧑</div>
+          <div>
+            <div class="rc-badge">RANK <span id="rank-num">01</span> / 05</div>
+            <div class="rc-name" id="rc-name">男友</div>
+            <div class="rc-rank" id="rc-rank">💔 哥布林</div>
+          </div>
+        </div>
+        <div class="rc-xp-row">
+          <div class="rc-xp-lbl">今日 XP</div>
+          <div class="rc-xp-val"><span id="xp-val">0</span> XP</div>
+        </div>
+        <div class="rc-bar"><div class="rc-fill" id="xp-bar" style="width:0%"></div></div>
+        <div class="rc-hearts" id="rc-hearts"></div>
+      </div>
+
+      <div class="timer-card">
+        <div class="tc-left">
+          <div class="tc-icon">💩</div>
+          <div><div class="tc-lbl">廁所計時</div><div class="tc-disp" id="tc-disp">今日最長：—</div></div>
+        </div>
+        <button class="tc-btn" id="tc-btn">開始</button>
+      </div>
+
+      <div class="sec-hdr">
+        <div class="sec-title">TODAY</div>
+        <div class="tab-pills">
+          <button class="tab-pill tp-bad" id="tab-bad">踩雷</button>
+          <button class="tab-pill" id="tab-good">加分</button>
+        </div>
+      </div>
+      <div id="bad-grid" class="items-grid"></div>
+      <div id="good-grid" class="items-grid" style="display:none"></div>
+
+      <div class="rating-card">
+        <div class="rh2"><span class="rt">今日評分</span><span class="rs" id="r-label">還沒評分</span></div>
+        <div class="stars-row" id="stars-row">
+          <button class="star-btn" data-star="1">⭐</button>
+          <button class="star-btn" data-star="2">⭐</button>
+          <button class="star-btn" data-star="3">⭐</button>
+          <button class="star-btn" data-star="4">⭐</button>
+          <button class="star-btn" data-star="5">⭐</button>
+        </div>
+        <div class="rmsg" id="r-msg"></div>
+      </div>
+
+      <div class="log-card">
+        <div class="log-hdr">📋 今日記錄</div>
+        <div id="log-list"><div class="log-empty">還沒有任何記錄 ♡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pg-history">
+    <div class="pg" style="padding-top:16px">
+      <div class="pg-title">歷史紀錄</div>
+      <div id="history-content"></div>
+    </div>
+  </div>
+
+  <div id="pg-settings">
+    <div class="pg" style="padding-top:16px">
+      <div class="pg-title">設定</div>
+      <div class="sg">
+        <div class="si"><div><div class="sl">男友名稱</div><div class="ss" id="s-name">—</div></div><button class="sb" id="btn-rename">更改</button></div>
+        <div class="si"><div><div class="sl">累積 XP</div><div class="ss" id="s-xp">0 XP</div></div></div>
+        <div class="si"><div><div class="sl">廁所最長紀錄</div><div class="ss" id="s-toilet">—</div></div></div>
+      </div>
+      <div class="sg">
+        <div class="si"><div><div class="sl">清除今日記錄</div></div><button class="sb" id="btn-clear">清除</button></div>
+        <div class="si"><div><div class="sl">重置全部資料</div></div><button class="sb sd" id="btn-reset">重置</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-page="home"><div class="ni">🔭</div><div class="nl">觀測站</div></button>
+    <button class="nav-btn" data-page="history"><div class="ni">🕐</div><div class="nl">歷史</div></button>
+    <button class="nav-btn" data-page="settings"><div class="ni">⚙️</div><div class="nl">設定</div></button>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-ov">
+  <div class="modal-box">
+    <div class="modal-pip"></div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-sub" id="m-sub"></div>
+    <input class="modal-input" id="m-input" type="text" style="display:none">
+    <div class="modal-btns">
+      <button class="modal-btn mb-cancel" id="m-cancel">取消</button>
+      <button class="modal-btn mb-ok" id="m-ok">確定</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var BAD=[
+  {id:'toilet',emoji:'🚽',name:'廁所超久',xp:-5},
+  {id:'smell',emoji:'👟',name:'鞋子太臭',xp:-5},
+  {id:'reply',emoji:'💬',name:'已讀不回',xp:-10},
+  {id:'listen',emoji:'🙉',name:'耳朵沒在聽',xp:-15},
+  {id:'forget',emoji:'🌀',name:'忘東忘西',xp:-10},
+  {id:'nomsg',emoji:'📵',name:'久沒回訊息',xp:-10},
+  {id:'lie',emoji:'🤥',name:'做人不老實',xp:-20},
+  {id:'promise',emoji:'⏰',name:'說話不算話',xp:-15},
+  {id:'sleep',emoji:'🛏️',name:'自己去房間睡',xp:-15},
+];
+var GOOD=[
+  {id:'hug',emoji:'🤗',name:'主動抱抱',xp:15},
+  {id:'food',emoji:'🍳',name:'請你吃飯',xp:30},
+  {id:'surprise',emoji:'🎁',name:'給你驚喜',xp:30},
+  {id:'clean',emoji:'🧹',name:'整理家裡',xp:20},
+  {id:'talk',emoji:'👂',name:'認真聽你說話',xp:15},
+  {id:'date',emoji:'🛍️',name:'帶你逛街',xp:20},
+  {id:'msg',emoji:'📱',name:'主動傳訊息',xp:10},
+  {id:'carry',emoji:'💪',name:'幫你拿東西',xp:5},
+  {id:'bath',emoji:'🛁',name:'陪你洗澡&刷牙',xp:10},
+];
+var RANKS=[
+  {title:'哥布林',emoji:'💔',min:-999,max:-1},
+  {title:'初級人類',emoji:'🤍',min:0,max:30},
+  {title:'普通男友',emoji:'💛',min:31,max:80},
+  {title:'職業男友',emoji:'🧡',min:81,max:160},
+  {title:'Pro Max 超級男友',emoji:'❤️',min:161,max:999},
+];
+var MSGS={
+  1:['😤 今天很崩潰','🌧️ 扣分日','😮 需要反省'],
+  2:['😑 普普通通','🙄 還差很多','😕 有點失望'],
+  3:['😐 還行啦','🤷 不好不壞','😌 中等水準'],
+  4:['🥰 今天不錯','💕 有在用心','😊 繼續保持！'],
+  5:['🏆 完美！','✨ 今日滿分！','👑 你是最棒的！'],
+};
+
+var S={name:'',todayXP:0,totalXP:0,todayRating:0,log:[],history:{},timer:{running:false,start:null,maxToday:null},counts:{}};
+var SKEY='bfobs_main';
+
+// ── STORAGE: Artifacts cloud storage + localStorage fallback ──
+async function cloudSave(){
+  var str=JSON.stringify(S);
+  // Local fallbacks first (instant)
+  try{localStorage.setItem(SKEY,str);}catch(e){}
+  try{sessionStorage.setItem(SKEY,str);}catch(e){}
+  // Cloud storage via Artifacts API
+  try{
+    if(window.storage){
+      await window.storage.set(SKEY, str);
+    }
+  }catch(e){}
+}
+async function cloudLoad(){
+  var raw=null;
+  // Try cloud first
+  try{
+    if(window.storage){
+      var res=await window.storage.get(SKEY);
+      if(res&&res.value)raw=res.value;
+    }
+  }catch(e){}
+  // Fallback to local
+  if(!raw){try{raw=localStorage.getItem(SKEY);}catch(e){}}
+  if(!raw){try{raw=sessionStorage.getItem(SKEY);}catch(e){}}
+  if(raw){
+    try{
+      var p=JSON.parse(raw);
+      if(p&&p.name!==undefined)S=p;
+    }catch(e){}
+  }
+}
+
+// ── SOUND ──
+var _ac=null;
+function getAC(){if(!_ac){try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return _ac;}
+function snd(type){
+  try{
+    var a=getAC();if(!a)return;
+    if(a.state==='suspended')a.resume();
+    var t=a.currentTime;
+    function n(f,s,d,w,v){var o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=w||'sine';o.frequency.setValueAtTime(f,t+s);g.gain.setValueAtTime(v||.18,t+s);g.gain.exponentialRampToValueAtTime(.001,t+s+d);o.start(t+s);o.stop(t+s+d+.05);}
+    function sl(f1,f2,s,d,w,v){var o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=w||'sine';o.frequency.setValueAtTime(f1,t+s);o.frequency.exponentialRampToValueAtTime(f2,t+s+d);g.gain.setValueAtTime(v||.18,t+s);g.gain.exponentialRampToValueAtTime(.001,t+s+d);o.start(t+s);o.stop(t+s+d+.05);}
+    if(type==='bad'){sl(180,80,0,.22,'sawtooth',.26);}
+    else if(type==='good'){n(660,0,.18,'sine',.20);n(880,.1,.18,'sine',.20);}
+    else if(type==='timer'){n(440,0,.12,'square',.13);}
+    else if(type==='star'){n(523,0,.15,'sine',.16);n(659,.07,.15,'sine',.16);n(784,.14,.15,'sine',.16);}
+    else if(type==='star5'){n(523,0,.18,'sine',.18);n(587,.07,.18,'sine',.18);n(659,.14,.18,'sine',.18);n(784,.21,.18,'sine',.18);n(1047,.28,.22,'sine',.18);}
+    else if(type==='nav'){n(520,0,.09,'sine',.08);}
+    else if(type==='del'){sl(300,150,0,.18,'sawtooth',.13);}
+  }catch(e){}
+}
+
+// ── UTILS ──
+function pad(n){return String(n).padStart(2,'0');}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function fmtTime(ms){var s=Math.floor(ms/1000),m=Math.floor(s/60),sc=s%60;return m?m+' 分 '+sc+' 秒':sc+' 秒';}
+function getRank(xp){for(var i=RANKS.length-1;i>=0;i--)if(xp>=RANKS[i].min)return i;return 0;}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+function xpPop(xp){
+  var num=Number(xp);if(isNaN(num)||num===0)return;
+  var p=document.createElement('div');p.className='xp-pop';
+  p.textContent=(num>0?'+':'')+num+' XP';
+  p.style.color=num>0?'#5a9a6a':'#c05545';
+  p.style.left=(window.innerWidth/2-24)+'px';p.style.top='175px';
+  document.body.appendChild(p);setTimeout(function(){if(p.parentNode)p.remove();},1300);
+}
+
+// ── RENDER ──
+function renderXP(){
+  var xp=S.todayXP,ri=getRank(xp),r=RANKS[ri];
+  document.getElementById('xp-val').textContent=xp>0?'+'+xp:String(xp);
+  document.getElementById('rc-rank').textContent=r.emoji+' '+r.title;
+  document.getElementById('rank-num').textContent=pad(ri+1);
+  var span=Math.max(1,r.max-r.min),prog=Math.min(100,Math.max(0,(xp-r.min)/span*100));
+  document.getElementById('xp-bar').style.width=prog+'%';
+  document.getElementById('rc-hearts').innerHTML=RANKS.map(function(rk,i){return '<div class="rh'+(i<=ri?' on':'')+'">'+rk.emoji+'</div>';}).join('');
+}
+function renderGrids(){
+  function grid(id,items,cls){
+    document.getElementById(id).innerHTML=items.map(function(item){
+      var c=S.counts[item.id]||0;
+      return '<div class="item-card '+cls+'" data-id="'+item.id+'">'+(c?'<div class="ic">\xd7'+c+'</div>':'')+'<div class="ixp">'+(item.xp>0?'+':'')+item.xp+'</div><span class="ie">'+item.emoji+'</span><div class="in">'+item.name+'</div></div>';
+    }).join('');
+  }
+  grid('bad-grid',BAD,'bad');grid('good-grid',GOOD,'gd');
+}
+function renderLog(){
+  var el=document.getElementById('log-list');
+  if(!S.log.length){el.innerHTML='<div class="log-empty">還沒有任何記錄 ♡</div>';return;}
+  el.innerHTML=S.log.slice().reverse().map(function(e,i){
+    var idx=S.log.length-1-i;
+    return '<div class="log-item"><div class="le">'+e.emoji+'</div><div class="lt">'+e.name+'</div><div class="lxp '+(e.xp<0?'bad':'pos')+'">'+(e.xp>0?'+':'')+e.xp+'</div><div class="ltime">'+e.time+'</div><button class="ldel" data-idx="'+idx+'">✕</button></div>';
+  }).join('');
+}
+function renderRating(){
+  var n=S.todayRating||0;
+  document.querySelectorAll('.star-btn').forEach(function(s,i){s.classList.toggle('lit',i<n);});
+  document.getElementById('r-label').textContent=n?'★'.repeat(n)+'☆'.repeat(5-n):'還沒評分';
+  document.getElementById('r-msg').textContent=n?MSGS[n][0]:'';
+}
+function renderSettings(){
+  document.getElementById('s-name').textContent=S.name||'—';
+  document.getElementById('s-xp').textContent=S.totalXP+' XP';
+  document.getElementById('s-toilet').textContent=S.timer.maxToday?fmtTime(S.timer.maxToday):'—';
+}
+function renderAll(){
+  document.getElementById('rc-name').textContent=S.name;
+  renderXP();renderGrids();renderLog();renderRating();renderSettings();updateTimerUI();
+}
+function renderHistory(){
+  var el=document.getElementById('history-content'),today=todayKey();
+  if(S.log.length>0||S.todayRating>0){
+    S.history[today]={log:S.log.slice(),xp:S.todayXP,rating:S.todayRating,rankIdx:getRank(S.todayXP)};
+    cloudSave();
+  }
+  var keys=Object.keys(S.history).sort().reverse();
+  if(!keys.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--sub2);font-size:13px">還沒有歷史記錄</div>';return;}
+  el.innerHTML=keys.map(function(k,i){
+    var d=S.history[k],isToday=(k===today);
+    var dateLabel=k.replace(/^(\d{4})-(\d{2})-(\d{2})$/,'$1/$2/$3')+(isToday?' · 今天':'');
+    var xpStr=(d.xp>0?'+':'')+d.xp+' XP',xpCol=d.xp>=0?'var(--green)':'var(--red)';
+    var starTxt=d.rating?'滿意度 '+d.rating+' 星':'未評分';
+    var starCol=d.rating>=4?'var(--green)':d.rating>=2?'#c9a040':'var(--sub)';
+    var ri=typeof d.rankIdx==='number'?d.rankIdx:getRank(d.xp);
+    var rankTxt=RANKS[ri].emoji+' '+RANKS[ri].title;
+    var logs=d.log||[];
+    var badLogs=logs.filter(function(e){return e.xp<0;});
+    var goodLogs=logs.filter(function(e){return e.xp>=0;});
+    function grp(items,label,col){
+      if(!items.length)return '';
+      return '<div class="h-grp" style="color:'+col+'">'+label+'</div>'+items.map(function(e){
+        return '<div class="h-li"><div class="le" style="font-size:15px">'+e.emoji+'</div><div class="lt" style="font-size:11.5px">'+e.name+'</div><div class="lxp '+(e.xp<0?'bad':'pos')+'" style="font-size:11px">'+(e.xp>0?'+':'')+e.xp+'</div><div class="ltime" style="font-size:10px">'+e.time+'</div></div>';
+      }).join('');
+    }
+    return '<div class="h-card">'
+      +'<div class="h-summary" data-day="hd'+i+'" data-arrow="ha'+i+'">'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">'+dateLabel+'</div><div style="font-size:11px;color:var(--sub2);margin-top:2px">'+logs.length+' 筆記錄</div></div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+xpCol+';margin-right:8px">'+xpStr+'</div>'
+        +'<div class="h-arrow'+(isToday?' open':'')+'" id="ha'+i+'">▶</div>'
+      +'</div>'
+      +'<div class="h-meta">'
+        +'<span class="h-tag" style="color:'+starCol+'">⭐ '+starTxt+'</span>'
+        +'<span class="h-tag">'+rankTxt+'</span>'
+      +'</div>'
+      +'<div class="h-detail'+(isToday?' open':'')+'" id="hd'+i+'">'
+        +grp(badLogs,'踩雷','var(--red)')+grp(goodLogs,'加分','var(--green)')
+        +(!logs.length?'<div style="padding:11px 15px;font-size:12px;color:var(--sub2)">沒有行為記錄</div>':'')
+      +'</div></div>';
+  }).join('');
+}
+
+// ── ACTIONS ──
+function doRecord(id,type){
+  var items=type==='bad'?BAD:GOOD,item=null;
+  for(var i=0;i<items.length;i++)if(items[i].id===id){item=items[i];break;}
+  if(!item)return;
+  snd(type==='bad'?'bad':'good');
+  S.todayXP+=item.xp;S.totalXP+=item.xp;S.counts[id]=(S.counts[id]||0)+1;
+  var now=new Date(),time=pad(now.getHours())+':'+pad(now.getMinutes());
+  S.log.push({id:id,emoji:item.emoji,name:item.name,xp:item.xp,time:time});
+  cloudSave();renderAll();xpPop(item.xp);toast(item.emoji+' 已記錄！');
+}
+function doDelete(idx){
+  snd('del');var e=S.log[idx];if(!e)return;
+  S.todayXP-=e.xp;S.totalXP-=e.xp;S.counts[e.id]=Math.max(0,(S.counts[e.id]||1)-1);
+  S.log.splice(idx,1);cloudSave();renderAll();
+}
+function doRating(n){
+  snd(n===5?'star5':'star');
+  S.todayRating=n;
+  var k=todayKey();if(S.history[k]){S.history[k].rating=n;S.history[k].rankIdx=getRank(S.todayXP);}
+  cloudSave();
+  document.querySelectorAll('.star-btn').forEach(function(s,i){
+    s.classList.toggle('lit',i<n);s.classList.remove('pop');
+    if(i<n)(function(b,delay){setTimeout(function(){b.classList.add('pop');setTimeout(function(){b.classList.remove('pop');},400);},delay);})(s,i*60);
+  });
+  document.getElementById('r-msg').textContent=MSGS[n][Math.floor(Math.random()*MSGS[n].length)];
+  document.getElementById('r-label').textContent='★'.repeat(n)+'☆'.repeat(5-n);
+  if(n===5)xpPop(99);
+}
+
+var tmrInt=null;
+function updateTimerUI(){
+  if(S.timer.running&&S.timer.start){
+    if(!tmrInt)tmrInt=setInterval(function(){if(S.timer.start)document.getElementById('tc-disp').textContent='計時中：'+fmtTime(Date.now()-S.timer.start);},1000);
+    document.getElementById('tc-btn').textContent='結束';document.getElementById('tc-btn').classList.add('running');
+  }
+  if(S.timer.maxToday)document.getElementById('tc-disp').textContent='今日最長：'+fmtTime(S.timer.maxToday);
+}
+function toggleTimer(){
+  snd('timer');
+  if(!S.timer.running){
+    S.timer.running=true;S.timer.start=Date.now();
+    tmrInt=setInterval(function(){if(S.timer.start)document.getElementById('tc-disp').textContent='計時中：'+fmtTime(Date.now()-S.timer.start);},1000);
+    document.getElementById('tc-btn').textContent='結束';document.getElementById('tc-btn').classList.add('running');
+  }else{
+    clearInterval(tmrInt);tmrInt=null;
+    var elapsed=Date.now()-S.timer.start;
+    S.timer.running=false;S.timer.start=null;
+    if(!S.timer.maxToday||elapsed>S.timer.maxToday)S.timer.maxToday=elapsed;
+    document.getElementById('tc-btn').textContent='開始';document.getElementById('tc-btn').classList.remove('running');
+    document.getElementById('tc-disp').textContent='今日最長：'+fmtTime(S.timer.maxToday);
+    var mins=Math.floor(elapsed/60000);
+    if(mins>=5){
+      snd('bad');toast('💩 待了 '+fmtTime(elapsed)+'！已記錄踩雷');
+      var xp=mins>=20?-30:mins>=10?-20:-10;
+      S.todayXP+=xp;S.totalXP+=xp;
+      var n2=new Date(),t2=pad(n2.getHours())+':'+pad(n2.getMinutes());
+      S.log.push({id:'toilet',emoji:'🚽',name:'廁所待了 '+fmtTime(elapsed),xp:xp,time:t2});
+    }else{toast('✅ '+fmtTime(elapsed)+'，還算正常');}
+    cloudSave();renderAll();
+  }
+}
+
+function showPage(page){
+  document.getElementById('pg-home').style.display=page==='home'?'block':'none';
+  document.getElementById('pg-history').style.display=page==='history'?'block':'none';
+  document.getElementById('pg-settings').style.display=page==='settings'?'block':'none';
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-page')===page);});
+  if(page==='history')renderHistory();
+  if(page==='settings')renderSettings();
+}
+
+var _mfn=null;
+function showModal(o){
+  document.getElementById('m-title').textContent=o.title||'';
+  document.getElementById('m-sub').textContent=o.sub||'';
+  var inp=document.getElementById('m-input');
+  inp.style.display=o.hasInput?'block':'none';
+  if(o.hasInput){inp.value=o.val||'';setTimeout(function(){inp.focus();},300);}
+  var btn=document.getElementById('m-ok');
+  btn.textContent=o.ok||'確定';
+  btn.className='modal-btn '+(o.danger?'mb-danger':'mb-ok');
+  _mfn=o.fn||null;
+  document.getElementById('modal-ov').classList.add('show');
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('show');_mfn=null;}
+
+function goMain(){
+  document.getElementById('setup').classList.remove('show');
+  document.getElementById('main').classList.add('show');
+  renderAll();showPage('home');
+}
+
+// ── BOOT ──
+(function(){
+  var d=new Date(),days=['日','一','二','三','四','五','六'];
+  document.getElementById('hdr-date').textContent='週'+days[d.getDay()]+' · '+(d.getMonth()+1)+'月'+d.getDate()+'日';
+})();
+
+// Load data then show correct screen
+cloudLoad().then(function(){
+  document.getElementById('loading').style.display='none';
+  if(S.name){
+    goMain();
+  }else{
+    document.getElementById('setup').classList.add('show');
+  }
+}).catch(function(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('setup').classList.add('show');
+});
+
+// Bindings
+document.getElementById('start-btn').addEventListener('click',function(){
+  var n=document.getElementById('name-input').value.trim();
+  if(!n){toast('請輸入名字！');return;}
+  S.name=n;cloudSave();goMain();
+});
+document.querySelectorAll('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){snd('nav');showPage(btn.getAttribute('data-page'));});
+});
+document.getElementById('hdr-set').addEventListener('click',function(){snd('nav');showPage('settings');});
+document.getElementById('tc-btn').addEventListener('click',toggleTimer);
+document.getElementById('tab-bad').addEventListener('click',function(){
+  document.getElementById('bad-grid').style.display='grid';document.getElementById('good-grid').style.display='none';
+  document.getElementById('tab-bad').className='tab-pill tp-bad';document.getElementById('tab-good').className='tab-pill';
+});
+document.getElementById('tab-good').addEventListener('click',function(){
+  document.getElementById('bad-grid').style.display='none';document.getElementById('good-grid').style.display='grid';
+  document.getElementById('tab-bad').className='tab-pill';document.getElementById('tab-good').className='tab-pill tp-good';
+});
+document.getElementById('bad-grid').addEventListener('click',function(e){var c=e.target.closest('.item-card');if(c)doRecord(c.getAttribute('data-id'),'bad');});
+document.getElementById('good-grid').addEventListener('click',function(e){var c=e.target.closest('.item-card');if(c)doRecord(c.getAttribute('data-id'),'good');});
+document.getElementById('stars-row').addEventListener('click',function(e){var b=e.target.closest('.star-btn');if(b)doRating(parseInt(b.getAttribute('data-star'),10));});
+document.getElementById('log-list').addEventListener('click',function(e){var b=e.target.closest('.ldel');if(b)doDelete(parseInt(b.getAttribute('data-idx'),10));});
+document.getElementById('history-content').addEventListener('click',function(e){
+  var s=e.target.closest('.h-summary');if(!s)return;
+  var day=document.getElementById(s.getAttribute('data-day')),arrow=document.getElementById(s.getAttribute('data-arrow'));
+  if(!day)return;var open=day.classList.contains('open');
+  day.classList.toggle('open',!open);if(arrow)arrow.classList.toggle('open',!open);
+});
+document.getElementById('m-cancel').addEventListener('click',closeModal);
+document.getElementById('m-ok').addEventListener('click',function(){
+  var inp=document.getElementById('m-input'),val=inp.style.display!=='none'?inp.value:null;
+  closeModal();if(_mfn)_mfn(val);
+});
+document.getElementById('modal-ov').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('btn-rename').addEventListener('click',function(){
+  showModal({title:'更改名字',sub:'輸入新的暱稱',ok:'更新',hasInput:true,val:S.name,
+    fn:function(v){if(v&&v.trim()){S.name=v.trim();cloudSave();renderAll();toast('名字已更新 ✓');}}});
+});
+document.getElementById('btn-clear').addEventListener('click',function(){
+  showModal({title:'清除今日記錄',sub:'今天所有記錄和 XP 都會清除，確定嗎？',ok:'清除',danger:true,
+    fn:function(){S.todayXP=0;S.log=[];S.counts={};S.todayRating=0;S.timer.maxToday=null;cloudSave();renderAll();toast('已清除今日記錄');}});
+});
+document.getElementById('btn-reset').addEventListener('click',function(){
+  showModal({title:'重置全部資料',sub:'所有資料都會消失，無法復原！',ok:'確定重置',danger:true,
+    fn:function(){
+      S={name:'',todayXP:0,totalXP:0,todayRating:0,log:[],history:{},timer:{running:false,start:null,maxToday:null},counts:{}};
+      cloudSave().then(function(){location.reload();});
+    }});
+});
+</script>
+</body>
+</html>
