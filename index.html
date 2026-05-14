@@ -299,7 +299,7 @@ var BAD=[
   {id:'forget',emoji:'🌀',name:'忘東忘西',xp:-10},
   {id:'nomsg',emoji:'📵',name:'久沒回訊息',xp:-10},
   {id:'lie',emoji:'🤥',name:'做人不老實',xp:-20},
-  {id:'promise',emoji:'⏰',name:'說話不算話',xp:-15},
+  {id:'promise',emoji:'🗣️',name:'碎碎念',xp:-15},
   {id:'sleep',emoji:'🛏️',name:'自己去房間睡',xp:-15},
 ];
 var GOOD=[
@@ -362,6 +362,16 @@ async function cloudLoad(){
       if(p&&p.name!==undefined)S=p;
     }catch(e){}
   }
+  // Auto-reset today's data if it's a new day
+  var today=todayKey();
+  if(S.lastDay && S.lastDay !== today){
+    // Save yesterday to history before clearing
+    if(S.log.length>0||S.todayRating>0){
+      S.history[S.lastDay]={log:S.log.slice(),xp:S.todayXP,rating:S.todayRating,rankIdx:getRank(S.todayXP)};
+    }
+    S.todayXP=0;S.log=[];S.counts={};S.todayRating=0;S.timer.maxToday=null;
+  }
+  S.lastDay=today;
 }
 
 // ── SOUND ──
@@ -636,12 +646,16 @@ document.getElementById('btn-rename').addEventListener('click',function(){
 });
 document.getElementById('btn-clear').addEventListener('click',function(){
   showModal({title:'清除今日記錄',sub:'今天所有記錄和 XP 都會清除，確定嗎？',ok:'清除',danger:true,
-    fn:function(){S.todayXP=0;S.log=[];S.counts={};S.todayRating=0;S.timer.maxToday=null;cloudSave();renderAll();toast('已清除今日記錄');}});
+    fn:function(){
+      S.todayXP=0;S.log=[];S.counts={};S.todayRating=0;S.timer.maxToday=null;
+      S.lastDay=todayKey();
+      cloudSave();renderAll();toast('已清除今日記錄');
+    }});
 });
 document.getElementById('btn-reset').addEventListener('click',function(){
   showModal({title:'重置全部資料',sub:'所有資料都會消失，無法復原！',ok:'確定重置',danger:true,
     fn:function(){
-      S={name:'',todayXP:0,totalXP:0,todayRating:0,log:[],history:{},timer:{running:false,start:null,maxToday:null},counts:{}};
+      S={name:'',todayXP:0,totalXP:0,todayRating:0,log:[],history:{},timer:{running:false,start:null,maxToday:null},counts:{},lastDay:''};
       cloudSave().then(function(){location.reload();});
     }});
 });
